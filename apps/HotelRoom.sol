@@ -36,8 +36,4 @@ contract HotelRoom {
         currentStatus = Statuses.Occupied;
         emit Occupy(msg.sender, msg.value);
     }
-
-    function vacate() {
-
-    }
 }
