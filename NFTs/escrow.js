@@ -6,9 +6,11 @@ const tokens = (n) => {
 }
 
 describe("Escrow", () => {
+
     let buyer, seller, inspector, lender;
     let nftContract, escrow;
-    it("saves the addresses", async () => {
+
+    beforeEach(async () => {
         // To get a few blockchain accounts from hardhat
         [buyer, seller, inspector, lender] = await ethers.getSigners();
 
@@ -22,9 +24,25 @@ describe("Escrow", () => {
 
         const Escrow = await ethers.getContactFactory("EscrowContract");
         escrow = await Escrow.deploy(nftContract.address, seller.address, inspector.address, lender.address);
+    })
 
+    describe("Deployment", () => {
         // To check if they have same values, can be used for other variables
-        const result = await escrow.nftAddress();
-        expect(result).to.be.equal(nftContract.address);
+        it("Return NFT", async () => {
+            const result = await escrow.nftAddress();
+            expect(result).to.be.equal(nftContract.address);
+        })
+        it("Return seller", async () => {
+            const result = await escrow.seller();
+            expect(result).to.be.equal(seller.address);
+        })
+        it("Return lender", async () => {
+            const result = await escrow.lender();
+            expect(result).to.be.equal(lender.address);
+        })
+        it("Return inspector", async () => {
+            const result = await escrow.inspector();
+            expect(result).to.be.equal(inspector.address);
+        })
     })
 })
