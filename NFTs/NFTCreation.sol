@@ -16,7 +16,7 @@ contract NFTCreation is ERC721URIStorage {
         _mint(msg.sender, newItemId);
         _setTokenURI(newItemId, tokenURI);
 
-        return _tokenId;
+        return newItemId;
     }
 
     function totalSupply() public view returns(uint) {
