@@ -10,6 +10,7 @@ contract EscrowContract {
     address public inspector;
     address public lender;
 
+    mapping(uint => bool) public inspectionPassed;
     mapping(uint => bool) public isListed;
     mapping(uint => uint) public purchasePrice;
     mapping(uint => uint) public escrowAmount;
@@ -17,6 +18,21 @@ contract EscrowContract {
 
     modifier onlySeller() {
         require(msg.sender == seller, "Only seller can list property");
+        _;
+    }
+
+    modifier onlyInspector() {
+        require(msg.sender == inspector, "Only inspector can call this method");
+        _;
+    }
+
+    modifier onlyBuyer(uint nftId) {
+        require(msg.sender == buyer[nftId], "Only buyer can deposit earnest");
+        _;
+    }
+
+    modifier enoughAmount(uint value, uint required) {
+        require(value >= required, "You need to pay the minimum amount");
         _;
     }
 
@@ -34,6 +50,18 @@ contract EscrowContract {
         purchasePrice[nftId] = _purchasePrice;
         escrowAmount[nftId] = _escrowAmount;
         buyer[nftId] = _buyer;
+    }
 
+    function depositEarnest(uint nftId) payable onlyBuyer(nftId) enoughAmount(msg.value, escrowAmount[nftId]) public {
+    }
+
+    function updateInspectionStatus(uint nftId, bool passed) onlyInspector public {
+        inspectionPassed[nftId] = passed;
+    }
+
+    recieve() external payable {}
+
+    function getBalance(uint nftId) public view returns(uint) {
+        return address(this).balance;
     }
 }
