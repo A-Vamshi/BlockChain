@@ -64,9 +64,36 @@ contract EscrowContract {
         approval[nftId][msg.sender] = true;
     }
 
-    recieve() external payable {}
+    
 
-    function getBalance(uint nftId) public view returns(uint) {
-        return address(this).balance;
+    // Finalize sale
+    /* 
+        * Require inspection status
+        * Require sale to be authorized
+        * Require funds to be correct amount
+        * Transfer funds to seller
+        * Transfer NFT to buyer
+    */
+    function finalizeSale(uint nftId) public {
+        require(nftPassed[nftId]);
+        require(approval[nftId][seller]);
+        require(approval[nftId][lender]);
+        require(approval[nftId][buyer[nftId]]);
+        require(address(this).balance >= purchasePrice[nftId]);
+
+        (bool success, ) = payable(seller).call{value: address(this).balance}("");
+        require(success);
+
+        IERC721(nftAddress).transferFrom(address(this), buyer[nftId], nftId);
+
+        isListed[nftId] = false;
+    }
+
+    function cancelTransaction(uint nftId) public {
+        if (inspectionPassed[nftId] == false) {
+            payable(buyer[nftId]).transfer(address(this).balance);
+        } else {
+            payable(seller).transfer(address(this).balance);
+        }
     }
 }
