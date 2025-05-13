@@ -16,14 +16,23 @@ describe("Escrow", () => {
 
         // Deploying the smart contract
         const NFTCreationContact = await ethers.getContactFactory("NFTCreation");
-        nftContract = await EscrowContract.deploy();
+        nftContract = await NFTCreationContact.deploy();
 
         // Mint
-        let transaction = await escrowContact.connect(seller).mint("https://example.metadataUrl/whatever/1.json");
+        let transaction = await nftContract.connect(seller).mint("https://example.metadataUrl/whatever/1.json");
         await transaction.wait();
 
         const Escrow = await ethers.getContactFactory("EscrowContract");
         escrow = await Escrow.deploy(nftContract.address, seller.address, inspector.address, lender.address);
+
+        // Approve property
+        transaction = await nftContract.connect(seller).approve(escrow.address, 1);
+        await transaction.wait();
+
+        // List property
+        transaction = await escrow.connect(seller).list(1, tokens(10), tokens(5), buyer.address);
+        await transaction.wait();
+
     })
 
     describe("Deployment", () => {
@@ -43,6 +52,29 @@ describe("Escrow", () => {
         it("Return inspector", async () => {
             const result = await escrow.inspector();
             expect(result).to.be.equal(inspector.address);
+        })
+    })
+
+    describe("Listing", () => {
+        // To check if the ownership of NFT changed or not
+        it("Updates the ownership", async () => {
+            expect(await nftContract.ownerOf(1)).to.be.equal(escrow.address);
+        })
+        it("Tests if it's listed", async () => {
+            const result = await escrow.isListed(1);
+            expect(result).to.be.equal(true);
+        })
+        it("Returns buyer", async () => {
+            const result = await escrow.buyer(1);
+            expect(result).to.be.equal(buyer.address);
+        })
+        it("Returns purchase price", async () => {
+            const result = await escrow.purchasePrice(1);
+            expect(result).to.be.equal(tokens(10));
+        })
+        it("Returns escrow amount", async () => {
+            const result = await escrow.escrowAmount(1);
+            expect(result).to.be.equal(tokens(5));
         })
     })
 })
