@@ -15,6 +15,7 @@ contract EscrowContract {
     mapping(uint => uint) public purchasePrice;
     mapping(uint => uint) public escrowAmount;
     mapping(uint => address) public buyer;
+    mapping(uint => mapping(address => bool)) public approval;
 
     modifier onlySeller() {
         require(msg.sender == seller, "Only seller can list property");
@@ -57,6 +58,10 @@ contract EscrowContract {
 
     function updateInspectionStatus(uint nftId, bool passed) onlyInspector public {
         inspectionPassed[nftId] = passed;
+    }
+
+    function approveSale(uint nftId) public {
+        approval[nftId][msg.sender] = true;
     }
 
     recieve() external payable {}
